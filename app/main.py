@@ -4,9 +4,11 @@ from urllib import response
 from fastapi import FastAPI, Response, status, HTTPException
 #from fastapi.params import Body
 from pydantic import BaseModel
+import psycopg2
+from psycopg2.extras import RealDictCursor
+import time
 
-
-my_post = [{"id":1,"title":"First Post","content":"First Post content"}]
+my_post = [{"id":1,"title":"First Post Title","content":"First Post content"}]
 
 app = FastAPI()
 
@@ -18,6 +20,18 @@ class Post(BaseModel):
     published: bool = True
     # Set the rating as an optional parameter with default value None
     rating: Optional[int] = None
+
+while True:
+    try:
+        conn = psycopg2.connect(host='localhost',database='fastapi',user='postgres',password='postgres',cursor_factory=RealDictCursor)
+        cursor = conn.cursor()
+        print("DB connection success")
+        break
+    except Exception as error:
+        print("DB connection failed",error)
+        time.sleep(10)
+
+
 
 def find_post(id):
     for post in my_post:
@@ -36,7 +50,9 @@ def getPost():
 
 @app.get("/posts")
 def getPost():
-    return {"data" : my_post}
+    cursor.execute("""SELECT * FROM posts """)
+    dbposts = cursor.fetchall()
+    return {"data" : dbposts}
 
 # Default response status is set as parameter to the decorator
 @app.post("/posts", status_code=status.HTTP_201_CREATED)
