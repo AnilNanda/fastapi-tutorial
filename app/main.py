@@ -59,17 +59,17 @@ def getPost():
 
 # The body of the request is stored in variable payload and validated again the schema Post defined above
 def createPost(payload: Post):
-    #print(payload,payload.dict())
-    post = payload.dict()
-    post["id"] = randrange(0,10000)
-    my_post.append(post)
-    return {"data": post}
+    cursor.execute("""INSERT INTO posts (title, content, published) values(%s, %s, %s) RETURNING *""",(payload.title, payload.content, payload.published, ))
+    new_post = cursor.fetchone()
+    conn.commit()
+    return {"data": new_post}
 
 @app.get("/posts/{id}")
 
 # id: int ensures the id value passed in the request is int type
 def getpost(id: int):
-    post = find_post(id)
+    cursor.execute("""SELECT * FROM posts where id = %s""",(id,))
+    post = cursor.fetchone()
     if not post:
         raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail=f"post with id: {id} not found")
         #response.status_code = status.HTTP_404_NOT_FOUND
@@ -78,19 +78,22 @@ def getpost(id: int):
 
 @app.delete("/posts/{id}", status_code=status.HTTP_204_NO_CONTENT)
 def deletepost(id: int):
-    index = find_index(id)
+    cursor.execute("""SELECT * FROM posts where id = %s""", (id,))
+    index = cursor.fetchone()
     if index is None:
         raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail=f"post with id: {id} not found")
-    my_post.pop(index)
+    #my_post.pop(index)
+    cursor.execute("""DELETE FROM posts where id = %s RETURNING *""", (id,))
+    conn.commit()
     # delete request can't return any response back to user, it can return only a status
     return Response(status_code=status.HTTP_204_NO_CONTENT)
 
 @app.put("/posts/{id}", status_code=status.HTTP_202_ACCEPTED)
 def updatepost(id: int, payload: Post):
-    index = find_index(id)
+    cursor.execute("""SELECT * FROM posts where id = %s""", (id,))
+    index = cursor.fetchone()
     if index == None:
         return HTTPException(status_code=status.HTTP_404_NOT_FOUND,detail=f"Post not found with id {id}")
-    new_post = payload.dict()
-    new_post["id"] = id
-    my_post[index]=new_post
+    cursor.execute("""UPDATE posts SET title=%s, content=%s, published=%s WHERE id = %s RETURNING *""", (payload.title,payload.content,payload.published, id))
+    conn.commit()
     return {"message": "updated post"}
