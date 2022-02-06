@@ -1,5 +1,5 @@
 from random import randrange
-from typing import Optional
+from typing import Optional, List
 from urllib import response
 from fastapi import FastAPI, Response, status, HTTPException, Depends
 #from fastapi.params import Body
@@ -10,6 +10,7 @@ import time
 from . import models
 from .database import engine, SessionLocal, get_db
 from sqlalchemy.orm import Session
+from . import schemas
 
 
 #my_post = [{"id":1,"title":"First Post Title","content":"First Post content"}]
@@ -18,15 +19,6 @@ models.Base.metadata.create_all(bind=engine)
 
 app = FastAPI()
 
-
-# Definig a schema for the request body
-class Post(BaseModel):
-    title: str
-    content: str
-    # Default value is set as True
-    published: bool = True
-    # Set the rating as an optional parameter with default value None
-    #rating: Optional[int] = None
 
 # while True:
 #     try:
@@ -43,25 +35,25 @@ def getPost():
     return {"message":"Hello World!"}
 
 
-@app.get("/posts")
+@app.get("/posts",response_model=List[schemas.GetPost])
 def getPost(db: Session = Depends(get_db)):
     dbposts = db.query(models.Post).all()
-    return {"data" : dbposts}
+    return dbposts
 
 # Default response status is set as parameter to the decorator
-@app.post("/posts", status_code=status.HTTP_201_CREATED)
+@app.post("/posts", status_code=status.HTTP_201_CREATED, response_model=schemas.GetPost)
 
 # The body of the request is stored in variable payload and validated again the schema Post defined above
-def createPost(payload: Post, db: Session = Depends(get_db)):
+def createPost(payload: schemas.CreatePost, db: Session = Depends(get_db)):
     # **payload.dict unpacks the Body and matches it with the model defined
     # print(**payload.dict())
     new_post = models.Post(**payload.dict())
     db.add(new_post)
     db.commit()
     db.refresh(new_post)
-    return {"data": new_post}
+    return new_post
 
-@app.get("/posts/{id}")
+@app.get("/posts/{id}", response_model=schemas.GetPost)
 
 # id: int ensures the id value passed in the request is int type
 def getpost(id: int, db: Session = Depends(get_db)):
@@ -70,7 +62,7 @@ def getpost(id: int, db: Session = Depends(get_db)):
         raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail=f"post with id: {id} not found")
         #response.status_code = status.HTTP_404_NOT_FOUND
         #return {"message": f"post with id: {id} not found"}
-    return {"data": post}
+    return post
 
 @app.delete("/posts/{id}", status_code=status.HTTP_204_NO_CONTENT)
 def deletepost(id: int, db: Session = Depends(get_db)):
@@ -84,11 +76,11 @@ def deletepost(id: int, db: Session = Depends(get_db)):
     return Response(status_code=status.HTTP_204_NO_CONTENT)
 
 @app.put("/posts/{id}", status_code=status.HTTP_202_ACCEPTED)
-def updatepost(id: int, payload: Post, db: Session = Depends(get_db)):
+def updatepost(id: int, payload: schemas.UpdatePost, db: Session = Depends(get_db)):
     post_query = db.query(models.Post).filter(models.Post.id == id)
     if post_query.first() == None:
         return HTTPException(status_code=status.HTTP_404_NOT_FOUND,detail=f"Post not found with id {id}")
     
     post_query.update(payload.dict(),synchronize_session=False)
     db.commit()
-    return {"message": post_query.first()}
+    return post_query.first()
