@@ -3,9 +3,9 @@ from fastapi import Depends, HTTPException, status, FastAPI, APIRouter
 from ..database import get_db
 from sqlalchemy.orm import Session
 
-router = APIRouter()
+router = APIRouter(prefix="/users", tags=['Users'])
 
-@router.post("/users", response_model=schemas.UserBase)
+@router.post("/", response_model=schemas.UserBase)
 def createuser(user: schemas.createUser, db: Session = Depends(get_db)):
 
     #hashing the user password before storing in DB
@@ -17,7 +17,7 @@ def createuser(user: schemas.createUser, db: Session = Depends(get_db)):
     db.refresh(new_user_query)
     return new_user_query
 
-@router.get("/users/{id}", response_model=schemas.UserBase)
+@router.get("/{id}", response_model=schemas.UserBase)
 def getUser(id: int, db: Session = Depends(get_db)):
     user = db.query(models.User).filter(models.User.id == id).first()
     if user is None:
