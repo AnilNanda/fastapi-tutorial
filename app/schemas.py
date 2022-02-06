@@ -1,6 +1,4 @@
 from datetime import datetime
-import email
-import string
 from pydantic import BaseModel, EmailStr
 
 # Definig a schema for the request body
@@ -31,3 +29,7 @@ class UserBase(BaseModel):
     email: EmailStr
     class Config:
         orm_mode = True
+
+class UserLogin(BaseModel):
+    email: EmailStr
+    password: str

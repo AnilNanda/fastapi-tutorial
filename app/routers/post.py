@@ -1,7 +1,7 @@
 from .. import schemas, models
 from ..database import get_db, SessionLocal
 from sqlalchemy.orm import Session
-from fastapi import Depends, status, HTTPException, Response, FastAPI, APIRouter
+from fastapi import Depends, status, HTTPException, Response, APIRouter
 from typing import List
 
 router = APIRouter(prefix="/posts", tags=['Posts'])
