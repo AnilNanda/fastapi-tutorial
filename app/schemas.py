@@ -1,5 +1,7 @@
 from datetime import datetime
-from pydantic import BaseModel
+import email
+import string
+from pydantic import BaseModel, EmailStr
 
 # Definig a schema for the request body
 class PostBase(BaseModel):
@@ -20,3 +22,12 @@ class CreatePost(PostBase):
 
 class UpdatePost(PostBase):
     published: bool
+
+class createUser(BaseModel):
+    email: EmailStr
+    password: str
+
+class UserBase(BaseModel):
+    email: EmailStr
+    class Config:
+        orm_mode = True

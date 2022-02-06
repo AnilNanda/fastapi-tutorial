@@ -1,6 +1,7 @@
 from random import randrange
 from typing import Optional, List
 from urllib import response
+
 from fastapi import FastAPI, Response, status, HTTPException, Depends
 #from fastapi.params import Body
 from pydantic import BaseModel
@@ -10,10 +11,7 @@ import time
 from . import models
 from .database import engine, SessionLocal, get_db
 from sqlalchemy.orm import Session
-from . import schemas
-
-
-#my_post = [{"id":1,"title":"First Post Title","content":"First Post content"}]
+from . import schemas, utils
 
 models.Base.metadata.create_all(bind=engine)
 
@@ -84,3 +82,15 @@ def updatepost(id: int, payload: schemas.UpdatePost, db: Session = Depends(get_d
     post_query.update(payload.dict(),synchronize_session=False)
     db.commit()
     return post_query.first()
+
+@app.post("/users", response_model=schemas.UserBase)
+def createuser(user: schemas.createUser, db: Session = Depends(get_db)):
+
+    #hashing the user password before storing in DB
+    user.password = utils.hash(user.password)
+
+    new_user_query = models.User(**user.dict())
+    db.add(new_user_query)
+    db.commit()
+    db.refresh(new_user_query)
+    return new_user_query
