@@ -19,8 +19,8 @@ def getPost(db: Session = Depends(get_db), current_user: int = Depends(oauth2.ge
 def createPost(payload: schemas.CreatePost, db: Session = Depends(get_db), current_user: int = Depends(oauth2.get_current_user)):
     # **payload.dict unpacks the Body and matches it with the model defined
     # print(**payload.dict())
-    print(current_user.email)
-    new_post = models.Post(**payload.dict())
+    print(current_user.id)
+    new_post = models.Post(owner_id=current_user.id, **payload.dict())
     db.add(new_post)
     db.commit()
     db.refresh(new_post)

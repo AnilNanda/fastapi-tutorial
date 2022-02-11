@@ -1,7 +1,5 @@
-from cgitb import text
-import email
 from .database import Base
-from sqlalchemy import TIMESTAMP, Column, Integer, String, Boolean
+from sqlalchemy import TIMESTAMP, Column, Integer, String, Boolean, ForeignKey
 from sqlalchemy.sql import func
 
 
@@ -12,6 +10,7 @@ class Post(Base):
     content = Column(String, nullable=False)
     published = Column(Boolean, server_default="True", nullable=False)
     created_at = Column(TIMESTAMP(timezone=True),nullable=False, server_default=func.now())
+    owner_id = Column(Integer, ForeignKey("users.id", ondelete="CASCADE"), nullable=False )
 
 class User(Base):
     __tablename__ = "users"
