@@ -1,3 +1,5 @@
+# This file contains basics of app testing using Pytest
+
 from app.apptest import add, sub, BankAccount, InsufficientFund
 import pytest
 
