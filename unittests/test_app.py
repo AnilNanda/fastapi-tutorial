@@ -42,3 +42,13 @@ def test_collect_interest():
     bankaccount = BankAccount(50)
     bankaccount.collect_interest()
     assert round(bankaccount.balance,6) == 55
+
+@pytest.mark.parametrize("deposited, withdrew, balance",[
+ (200,100,100),
+ (30,15,15),
+ (243,124,119)
+])
+def test_transaction(zero_bank_account,deposited,withdrew,balance):
+    zero_bank_account.deposit(deposited)
+    zero_bank_account.withdraw(withdrew)
+    assert zero_bank_account.balance == balance
