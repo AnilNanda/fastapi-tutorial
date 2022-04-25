@@ -43,6 +43,7 @@ def test_collect_interest():
     bankaccount.collect_interest()
     assert round(bankaccount.balance,6) == 55
 
+#Using parameter and fixture together
 @pytest.mark.parametrize("deposited, withdrew, balance",[
  (200,100,100),
  (30,15,15),
@@ -52,3 +53,8 @@ def test_transaction(zero_bank_account,deposited,withdrew,balance):
     zero_bank_account.deposit(deposited)
     zero_bank_account.withdraw(withdrew)
     assert zero_bank_account.balance == balance
+
+#Checking for exceptions from the code which are expected
+def test_insufficient_fund(zero_bank_account):
+    with pytest.raises(Exception):
+        zero_bank_account.withdraw(10)

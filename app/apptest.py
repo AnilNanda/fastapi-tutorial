@@ -5,6 +5,7 @@ def add(a,b):
 def sub(a,b):
     return a-b
 
+
 class BankAccount():
     def __init__(self, starting_balance=0):
         self.balance = starting_balance
@@ -13,6 +14,8 @@ class BankAccount():
         self.balance += amount
     
     def withdraw(self, amount):
+        if amount > self.balance:
+            raise Exception("Insufficient fund in account")
         self.balance -= amount
     
     def collect_interest(self):
