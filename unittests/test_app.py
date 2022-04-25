@@ -1,5 +1,7 @@
-from app.apptest import add, sub, BankAccount
+from app.apptest import add, sub, BankAccount, InsufficientFund
 import pytest
+
+
 
 @pytest.mark.parametrize("num1,num2,expected",[
     (3,4,7),
@@ -56,5 +58,5 @@ def test_transaction(zero_bank_account,deposited,withdrew,balance):
 
 #Checking for exceptions from the code which are expected
 def test_insufficient_fund(zero_bank_account):
-    with pytest.raises(Exception):
+    with pytest.raises(InsufficientFund):
         zero_bank_account.withdraw(10)
